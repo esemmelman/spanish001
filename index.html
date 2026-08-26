@@ -50,8 +50,9 @@
     .mode-btn { border: 0; border-radius: 12px; padding: 14px 18px; color: var(--muted); background: transparent; font: inherit; font-size: 1.5rem; font-weight: 750; cursor: pointer; transition: .2s ease; }
     .mode-btn:hover { color: var(--ink); background: rgba(255,255,255,.7); }
     .mode-btn.active { color: white; background: var(--teal); box-shadow: 0 5px 14px rgba(29,118,105,.2); }
-    .page-reader-button { flex: 0 0 auto; color: white; background: var(--teal); box-shadow: 0 5px 14px rgba(29,118,105,.2); }
-    .page-reader-button:hover { color: white; background: #155f54; }
+    .page-reader-button { flex: 0 0 auto; border: 1px solid var(--line); color: var(--muted); background: white; }
+    .page-reader-button:hover { color: var(--ink); background: #f8f5ed; }
+    .page-reader-button.active, .page-reader-button.active:hover { border-color: var(--teal); color: white; background: var(--teal); box-shadow: 0 5px 14px rgba(29,118,105,.2); }
 
     .range-picker { flex: 1; margin: 0; min-width: 0; }
     .range-options { display: flex; flex-wrap: wrap; gap: 11px; }
@@ -280,7 +281,7 @@
     </dialog>
 
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.3.2</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.3.3</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
@@ -709,6 +710,7 @@
 
     function openReadingPage() {
       renderReadingPage();
+      $("#pageReaderButton").classList.add("active");
       $("#pageReader").showModal();
     }
 
@@ -852,6 +854,7 @@
     quizButton.addEventListener("click", () => setMode("quiz"));
     $("#pageReaderButton").addEventListener("click", openReadingPage);
     $("#readerClose").addEventListener("click", () => $("#pageReader").close());
+    $("#pageReader").addEventListener("close", () => $("#pageReaderButton").classList.remove("active"));
     $("#pageReader").addEventListener("click", event => {
       if (event.target === event.currentTarget) event.currentTarget.close();
     });
