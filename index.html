@@ -150,10 +150,12 @@
     .reader-heading { margin: 0; font-size: clamp(2rem, 5vw, 3.4rem); }
     .reader-close { min-width: 120px; padding: 13px 20px; border: 3px solid white; border-radius: 14px; color: white; background: transparent; font: inherit; font-size: 1.35rem; font-weight: 900; cursor: pointer; }
     .reader-close:hover { color: var(--ink); background: white; }
-    .reader-scroll-region { flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: scroll; scrollbar-width: auto; scrollbar-color: var(--teal) #e8e2d7; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
-    .reader-scroll-region::-webkit-scrollbar { width: 24px; }
-    .reader-scroll-region::-webkit-scrollbar-track { background: #e8e2d7; }
-    .reader-scroll-region::-webkit-scrollbar-thumb { min-height: 70px; border: 4px solid #e8e2d7; border-radius: 99px; background: var(--teal); }
+    .reader-body { display: flex; flex: 1 1 auto; min-height: 0; }
+    .reader-scroll-region { flex: 1 1 auto; min-width: 0; min-height: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+    .reader-scroll-region::-webkit-scrollbar { display: none; }
+    .reader-custom-scrollbar { position: relative; flex: 0 0 58px; min-height: 0; border-left: 3px solid #c8c0b2; background: #e8e2d7; cursor: pointer; touch-action: none; }
+    .reader-scroll-thumb { position: absolute; top: 0; right: 7px; left: 7px; min-height: 90px; border: 4px solid white; border-radius: 99px; background: var(--teal); box-shadow: 0 3px 10px rgba(12,40,35,.28); cursor: grab; touch-action: none; }
+    .reader-scroll-thumb:active { cursor: grabbing; background: #155f54; }
     .reader-content { min-width: 0; overflow-x: hidden; padding: clamp(28px, 5vw, 64px); font-size: clamp(1.85rem, 3vw, 2.45rem); line-height: 1.55; }
     .reader-content h2 { margin: 1.4em 0 .45em; color: #9d3328; font-size: 1.65em; line-height: 1.1; }
     .reader-content h2:first-child { margin-top: 0; }
@@ -300,13 +302,18 @@
         <h1 class="reader-heading" id="readerHeading">Page 1</h1>
         <button class="reader-close" id="readerClose" type="button">Close</button>
       </header>
-      <div class="reader-scroll-region" id="readerScrollRegion" tabindex="0" aria-label="Scrollable page text">
-        <article class="reader-content" id="readerContent"></article>
+      <div class="reader-body">
+        <div class="reader-scroll-region" id="readerScrollRegion" tabindex="0" aria-label="Scrollable page text">
+          <article class="reader-content" id="readerContent"></article>
+        </div>
+        <div class="reader-custom-scrollbar" id="readerScrollbar" role="scrollbar" aria-label="Page position" aria-controls="readerScrollRegion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="reader-scroll-thumb" id="readerScrollThumb"></div>
+        </div>
       </div>
     </dialog>
 
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.4.2</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.4.3</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
@@ -749,6 +756,20 @@
       $("#readerHeading").textContent = `Page ${pageNumber}`;
       $("#readerContent").innerHTML = readingPages[pageNumber] || "<h2>Page unavailable</h2><p>No large-print page has been prepared for this page number.</p>";
       $("#readerScrollRegion").scrollTop = 0;
+      window.requestAnimationFrame(updateReaderScrollbar);
+    }
+
+    function updateReaderScrollbar() {
+      const region = $("#readerScrollRegion");
+      const track = $("#readerScrollbar");
+      const thumb = $("#readerScrollThumb");
+      const scrollRange = Math.max(0, region.scrollHeight - region.clientHeight);
+      const thumbHeight = Math.max(90, track.clientHeight * region.clientHeight / Math.max(region.scrollHeight, 1));
+      const travel = Math.max(0, track.clientHeight - thumbHeight);
+      const progress = scrollRange ? region.scrollTop / scrollRange : 0;
+      thumb.style.height = `${Math.min(track.clientHeight, thumbHeight)}px`;
+      thumb.style.transform = `translateY(${travel * progress}px)`;
+      track.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
     }
 
     function openReadingPage() {
@@ -756,7 +777,10 @@
       $("#pageReaderButton").classList.add("active");
       const reader = $("#pageReader");
       reader.showModal();
-      window.requestAnimationFrame(() => $("#readerScrollRegion").scrollTo({ top: 0, left: 0, behavior: "instant" }));
+      window.requestAnimationFrame(() => {
+        $("#readerScrollRegion").scrollTo({ top: 0, left: 0, behavior: "instant" });
+        updateReaderScrollbar();
+      });
     }
 
     function renderCard() {
@@ -899,6 +923,36 @@
     quizButton.addEventListener("click", () => setMode("quiz"));
     $("#pageReaderButton").addEventListener("click", openReadingPage);
     $("#readerClose").addEventListener("click", () => $("#pageReader").close());
+    $("#readerScrollRegion").addEventListener("scroll", updateReaderScrollbar, { passive: true });
+    $("#readerScrollbar").addEventListener("pointerdown", event => {
+      const region = $("#readerScrollRegion");
+      const track = $("#readerScrollbar");
+      const thumb = $("#readerScrollThumb");
+      const trackRect = track.getBoundingClientRect();
+      const thumbRect = thumb.getBoundingClientRect();
+      const startY = event.clientY;
+      const startScroll = region.scrollTop;
+      const draggingThumb = event.target === thumb;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      if (!draggingThumb) {
+        const progress = Math.max(0, Math.min(1, (event.clientY - trackRect.top - thumbRect.height / 2) / Math.max(1, trackRect.height - thumbRect.height)));
+        region.scrollTop = progress * (region.scrollHeight - region.clientHeight);
+      }
+      const move = moveEvent => {
+        if (!draggingThumb) return;
+        const travel = Math.max(1, trackRect.height - thumbRect.height);
+        region.scrollTop = startScroll + (moveEvent.clientY - startY) * (region.scrollHeight - region.clientHeight) / travel;
+      };
+      const stop = () => {
+        track.removeEventListener("pointermove", move);
+        track.removeEventListener("pointerup", stop);
+        track.removeEventListener("pointercancel", stop);
+      };
+      track.addEventListener("pointermove", move);
+      track.addEventListener("pointerup", stop);
+      track.addEventListener("pointercancel", stop);
+    });
+    window.addEventListener("resize", updateReaderScrollbar);
     $("#pageReader").addEventListener("close", () => $("#pageReaderButton").classList.remove("active"));
     $("#pageReader").addEventListener("click", event => {
       if (event.target === event.currentTarget) event.currentTarget.close();
