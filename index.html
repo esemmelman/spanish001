@@ -202,7 +202,7 @@
     </main>
 
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.0.0</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.1.0</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
@@ -262,6 +262,26 @@
     const SUPABASE_URL = "https://fgomaujsdblpzxhnnqrg.supabase.co";
     const SUPABASE_KEY = "sb_publishable_JOUqLZDnfGu_yCa6k6FVDQ_AYwpr72i";
     const VOCABULARY_TABLE = "spanish001_vocabulary_v1";
+    const STORAGE_KEY = "spanish001-study-state-v1";
+    let currentPage = 1;
+
+    function readStudyState() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { lastPage: 1, pages: {} };
+      } catch {
+        return { lastPage: 1, pages: {} };
+      }
+    }
+
+    function saveStudyState() {
+      const state = readStudyState();
+      state.lastPage = currentPage;
+      state.pages[String(currentPage)] = {
+        selectedGroup: Math.floor(groupStart / 10),
+        unlockedGroup
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
 
     $("#wordTotal").textContent = words.length;
 
@@ -278,7 +298,7 @@
         input.name = "wordRange";
         input.id = `range-${start}`;
         input.value = start;
-        input.checked = start === 0;
+        input.checked = start === groupStart;
         input.disabled = groupIndex > unlockedGroup;
         input.dataset.groupIndex = groupIndex;
         const label = document.createElement("label");
@@ -291,7 +311,7 @@
       });
     }
 
-    function setPageWords(entries) {
+    function setPageWords(entries, pageNumber) {
       const unique = new Set();
       words = entries.filter(([spanish]) => {
         const key = normalizeSpanish(spanish);
@@ -303,9 +323,13 @@
         { length: Math.ceil(words.length / 10) },
         (_, groupIndex) => words.slice(groupIndex * 10, groupIndex * 10 + 10)
       );
-      unlockedGroup = 0;
-      groupStart = 0;
-      activeWords = wordGroups[0] || [];
+      currentPage = Number(pageNumber);
+      const savedPage = readStudyState().pages[String(currentPage)] || {};
+      const lastGroupIndex = Math.max(0, wordGroups.length - 1);
+      unlockedGroup = Math.min(Math.max(0, Number(savedPage.unlockedGroup) || 0), lastGroupIndex);
+      const selectedGroup = Math.min(Math.max(0, Number(savedPage.selectedGroup) || 0), unlockedGroup, lastGroupIndex);
+      groupStart = selectedGroup * 10;
+      activeWords = wordGroups[selectedGroup] || [];
       deck = [...activeWords];
       cardIndex = 0;
       score = 0;
@@ -315,6 +339,7 @@
       $("#quizScore").textContent = "Score 0 / 0";
       buildRangeOptions();
       if (deck.length) renderCard();
+      saveStudyState();
     }
 
     async function supabaseRead(query) {
@@ -326,15 +351,16 @@
     }
 
     async function loadPage(pageNumber) {
+      currentPage = Number(pageNumber);
       const status = $("#dataStatus");
       status.textContent = `Loading Page ${pageNumber}…`;
       try {
         const rows = await supabaseRead(`select=spanish_word,english_word,display_order&page_number=eq.${encodeURIComponent(pageNumber)}&order=display_order.asc`);
         if (!rows.length) throw new Error("No vocabulary found for this page");
-        setPageWords(rows.map(row => [row.spanish_word, row.english_word]));
+        setPageWords(rows.map(row => [row.spanish_word, row.english_word]), pageNumber);
         status.textContent = `Page ${pageNumber} · Supabase`;
       } catch (error) {
-        if (String(pageNumber) === "1") setPageWords(vocabulary);
+        if (String(pageNumber) === "1") setPageWords(vocabulary, 1);
         status.textContent = `Page ${pageNumber} · offline fallback`;
         console.warn(error);
       }
@@ -351,7 +377,10 @@
           option.textContent = page;
           return option;
         }));
-        if (pages.length) await loadPage(pages[0]);
+        const savedPage = Number(readStudyState().lastPage);
+        const initialPage = pages.includes(savedPage) ? savedPage : pages[0];
+        select.value = String(initialPage);
+        if (pages.length) await loadPage(initialPage);
       } catch (error) {
         $("#dataStatus").textContent = "Page 1 · offline fallback";
         console.warn(error);
@@ -368,6 +397,7 @@
           nextInput.disabled = false;
           nextInput.nextElementSibling.removeAttribute("title");
         }
+        saveStudyState();
         return true;
       }
       return false;
@@ -382,6 +412,7 @@
       answered = 0;
       locked = false;
       quizQueue = shuffle(activeWords);
+      saveStudyState();
       $("#quizScore").textContent = "Score 0 / 0";
       renderCard();
       if (quizPanel.classList.contains("active")) newQuestion();
