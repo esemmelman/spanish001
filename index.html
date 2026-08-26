@@ -156,6 +156,9 @@
     .reader-custom-scrollbar { position: relative; flex: 0 0 58px; min-height: 0; border-left: 3px solid #c8c0b2; background: #e8e2d7; cursor: pointer; touch-action: none; }
     .reader-scroll-thumb { position: absolute; top: 0; right: 7px; left: 7px; min-height: 90px; border: 4px solid white; border-radius: 99px; background: var(--teal); box-shadow: 0 3px 10px rgba(12,40,35,.28); cursor: grab; touch-action: none; }
     .reader-scroll-thumb:active { cursor: grabbing; background: #155f54; }
+    .translated-word { border-bottom: .08em dotted currentColor; cursor: help; }
+    .translation-bubble { position: fixed; z-index: 8; display: none; max-width: min(420px, calc(100vw - 24px)); padding: 12px 18px; border: 4px solid white; border-radius: 16px; color: white; background: #17322d; box-shadow: 0 8px 24px rgba(12,40,35,.4); font-family: Arial, Helvetica, sans-serif; font-size: 1.5rem; font-weight: 800; line-height: 1.2; text-align: center; pointer-events: none; }
+    .translation-bubble.show { display: block; }
     .reader-content { min-width: 0; overflow-x: hidden; padding: clamp(28px, 5vw, 64px); font-size: clamp(1.85rem, 3vw, 2.45rem); line-height: 1.55; }
     .reader-content h2 { margin: 1.4em 0 .45em; color: #9d3328; font-size: 1.65em; line-height: 1.1; }
     .reader-content h2:first-child { margin-top: 0; }
@@ -310,10 +313,11 @@
           <div class="reader-scroll-thumb" id="readerScrollThumb"></div>
         </div>
       </div>
+      <div class="translation-bubble" id="translationBubble" role="status" aria-live="polite"></div>
     </dialog>
 
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.4.3</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.5.0</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
@@ -322,15 +326,15 @@
     const readingPages = {
       1: `
         <h2>Para empezar</h2>
-        <h3>Chapter Objectives — Communication</h3>
-        <p>By the end of <em>Para empezar</em> you will be able to:</p>
-        <ul><li>Talk about your daily life.</li><li>Write about leisure and after-school activities.</li></ul>
-        <p><strong>You will demonstrate what you know and can do:</strong></p>
-        <ul><li>Presentación oral: Mi vida</li><li>Presentación escrita: Actividades en mi comunidad</li></ul>
+        <h3 lang="en">Chapter Objectives — Communication</h3>
+        <p lang="en">By the end of <em>Para empezar</em> you will be able to:</p>
+        <ul lang="en"><li>Talk about your daily life.</li><li>Write about leisure and after-school activities.</li></ul>
+        <p lang="en"><strong>You will demonstrate what you know and can do:</strong></p>
+        <ul lang="en"><li>Presentación oral: Mi vida</li><li>Presentación escrita: Actividades en mi comunidad</li></ul>
         <h3>1. Tu vida diaria</h3>
-        <ul><li>Talk about school and non-school daily activities.</li><li>Describe your day before and after school.</li></ul>
+        <ul lang="en"><li>Talk about school and non-school daily activities.</li><li>Describe your day before and after school.</li></ul>
         <h3>2. Días especiales</h3>
-        <ul><li>Talk about weekend activities.</li><li>Discuss special events, celebrations, and vacations.</li></ul>
+        <ul lang="en"><li>Talk about weekend activities.</li><li>Discuss special events, celebrations, and vacations.</li></ul>
         <h2>Arte y cultura — España</h2>
         <h3>Vida diaria de los jóvenes</h3>
         <p>¿Qué cosas son importantes para los jóvenes de España?</p>
@@ -339,8 +343,8 @@
         <blockquote>¿En qué te pareces y en qué te diferencias de los jóvenes que respondieron a la encuesta?</blockquote>`,
       2: `
         <h2>1. Tu vida diaria</h2>
-        <h3>Objectives</h3>
-        <ul><li>Talk and write about your daily routine.</li><li>Discuss school and extracurricular activities.</li></ul>
+        <h3 lang="en">Objectives</h3>
+        <ul lang="en"><li>Talk and write about your daily routine.</li><li>Discuss school and extracurricular activities.</li></ul>
         <h3>¿Cómo pasan los días los jóvenes?</h3>
         <h3>Rosa</h3>
         <blockquote>Durante la semana trabajo de las 3 a las 6 en el supermercado y por la noche tengo que estudiar. Me gusta poner música cuando hago la tarea para la escuela. Los fines de semana mi novio y yo vamos al parque para jugar con el perro. En el invierno nos gusta pasar tiempo en el gimnasio. Tienen una piscina excelente.</blockquote>
@@ -355,11 +359,11 @@
       3: `
         <h2>Gramática — Repaso</h2>
         <h3>Verbos irregulares</h3>
-        <p>Remember that some verbs in Spanish are irregular in the first person singular of the present tense. Look at the following examples. Note that other verbs you know that are conjugated like <em>conocer</em> are <em>obedecer</em>, <em>ofrecer</em>, and <em>parecer</em>.</p>
+        <p lang="en">Remember that some verbs in Spanish are irregular in the first person singular of the present tense. Look at the following examples. Note that other verbs you know that are conjugated like <em>conocer</em> are <em>obedecer</em>, <em>ofrecer</em>, and <em>parecer</em>.</p>
         <div class="reader-table-wrap"><table><thead><tr><th>Infinitive</th><th>Yo form</th></tr></thead><tbody>
         <tr><td>conocer</td><td>conozco</td></tr><tr><td>dar</td><td>doy</td></tr><tr><td>hacer</td><td>hago</td></tr><tr><td>poner</td><td>pongo</td></tr><tr><td>saber</td><td>sé</td></tr><tr><td>salir</td><td>salgo</td></tr><tr><td>traer</td><td>traigo</td></tr><tr><td>ver</td><td>veo</td></tr><tr><td>caer</td><td>caigo</td></tr></tbody></table></div>
-        <p>Also, there are some verbs in Spanish that are irregular in all the persons of the present tense:</p>
-        <h3>Irregular in all persons</h3>
+        <p lang="en">Also, there are some verbs in Spanish that are irregular in all the persons of the present tense:</p>
+        <h3 lang="en">Irregular in all persons</h3>
         <div class="conjugation-grid">
           <table><thead><tr><th colspan="2">ser</th></tr></thead><tbody><tr><td>yo</td><td>soy</td></tr><tr><td>nosotros</td><td>somos</td></tr><tr><td>tú</td><td>eres</td></tr><tr><td>vosotros</td><td>sois</td></tr><tr><td>él/ella</td><td>es</td></tr><tr><td>ellos/ellas</td><td>son</td></tr></tbody></table>
           <table><thead><tr><th colspan="2">ir</th></tr></thead><tbody><tr><td>yo</td><td>voy</td></tr><tr><td>nosotros</td><td>vamos</td></tr><tr><td>tú</td><td>vas</td></tr><tr><td>vosotros</td><td>vais</td></tr><tr><td>él/ella</td><td>va</td></tr><tr><td>ellos/ellas</td><td>van</td></tr></tbody></table>
@@ -389,7 +393,7 @@
       5: `
         <h2>Gramática — Repaso</h2>
         <h3>Presente de los verbos con cambios de raíz</h3>
-        <p>Remember that in Spanish there are three groups of stem-changing verbs. The stem change occurs in all forms except the <em>nosotros(as)</em> and <em>vosotros(as)</em> forms. Here are the present-tense forms of <em>perder</em> (ie), <em>poder</em> (ue) and <em>pedir</em> (i).</p>
+        <p lang="en">Remember that in Spanish there are three groups of stem-changing verbs. The stem change occurs in all forms except the <em>nosotros(as)</em> and <em>vosotros(as)</em> forms. Here are the present-tense forms of <em>perder</em> (ie), <em>poder</em> (ue) and <em>pedir</em> (i).</p>
         <div class="conjugation-grid">
           <table><thead><tr><th colspan="2">perder (e → ie)</th></tr></thead><tbody><tr><td>yo</td><td>pierdo</td></tr><tr><td>nosotros</td><td>perdemos</td></tr><tr><td>tú</td><td>pierdes</td></tr><tr><td>vosotros</td><td>perdéis</td></tr><tr><td>él/ella</td><td>pierde</td></tr><tr><td>ellos/ellas</td><td>pierden</td></tr></tbody></table>
           <table><thead><tr><th colspan="2">poder (o → ue)</th></tr></thead><tbody><tr><td>yo</td><td>puedo</td></tr><tr><td>nosotros</td><td>podemos</td></tr><tr><td>tú</td><td>puedes</td></tr><tr><td>vosotros</td><td>podéis</td></tr><tr><td>él/ella</td><td>puede</td></tr><tr><td>ellos/ellas</td><td>pueden</td></tr></tbody></table>
@@ -407,8 +411,8 @@
       6: `
         <h2>9. Roberto y Lucas</h2>
         <p><strong>Leer, escribir.</strong></p>
-        <p><strong>1.</strong> Imagina que conoces a dos hermanos muy diferentes entre sí <em>(from each other)</em>. Observa las fotos y lee el texto.</p>
-        <p>Roberto y Lucas son hermanos. Ellos son muy diferentes entre sí. Los fines de semana, Roberto duerme hasta las siete de la mañana. A las ocho, juega al fútbol con sus amigos y a las diez vuelve a casa. Lucas prefiere levantarse tarde. No entiende cómo su hermano puede levantarse temprano. A Lucas le gusta tocar la guitarra. Sonríe mucho cuando escucha música, porque le encanta. Cuando Lucas toca la guitarra muy alto <em>(loudly)</em>, Roberto se vuelve loco. Lucas se vuelve loco cuando Roberto enciende la luz y lo despierta.</p>
+        <p><strong>1.</strong> Imagina que conoces a dos hermanos muy diferentes entre sí <em lang="en">(from each other)</em>. Observa las fotos y lee el texto.</p>
+        <p>Roberto y Lucas son hermanos. Ellos son muy diferentes entre sí. Los fines de semana, Roberto duerme hasta las siete de la mañana. A las ocho, juega al fútbol con sus amigos y a las diez vuelve a casa. Lucas prefiere levantarse tarde. No entiende cómo su hermano puede levantarse temprano. A Lucas le gusta tocar la guitarra. Sonríe mucho cuando escucha música, porque le encanta. Cuando Lucas toca la guitarra muy alto <em lang="en">(loudly)</em>, Roberto se vuelve loco. Lucas se vuelve loco cuando Roberto enciende la luz y lo despierta.</p>
         <p><strong>2.</strong> ¿Te pareces más a Roberto o a Lucas? Indica con una X quién hace cada una de estas actividades y si tú también las haces. Luego, escribe un párrafo comparándote a ti mismo con Roberto y Lucas.</p>
         <h3>Modelo</h3>
         <blockquote>Lucas y yo preferimos escuchar música que hacer deportes.</blockquote>
@@ -454,6 +458,7 @@
       seenSpanish.add(key);
       return true;
     });
+    let translationDictionary = new Map(words.map(([spanish, english]) => [normalizeSpanish(spanish), english]));
     let wordGroups = Array.from(
       { length: Math.ceil(words.length / 10) },
       (_, groupIndex) => words.slice(groupIndex * 10, groupIndex * 10 + 10)
@@ -474,6 +479,7 @@
     let answered = 0;
     let locked = false;
     let groupEndTimer;
+    let translationBubbleTimer;
     let unlockedGroup = 0;
     let quizQueue = shuffleQuizWords(activeWords);
     const SUPABASE_URL = "https://fgomaujsdblpzxhnnqrg.supabase.co";
@@ -662,7 +668,7 @@
 
     async function supabaseRead(query) {
       const response = await fetch(`${SUPABASE_URL}/rest/v1/${VOCABULARY_TABLE}?${query}`, {
-        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+        headers: { apikey: SUPABASE_KEY }
       });
       if (!response.ok) throw new Error(`Supabase returned ${response.status}`);
       return response.json();
@@ -687,7 +693,8 @@
     async function loadPages() {
       const select = $("#pageSelect");
       try {
-        const rows = await supabaseRead("select=page_number&order=page_number.asc");
+        const rows = await supabaseRead("select=page_number,spanish_word,english_word&order=page_number.asc,display_order.asc");
+        translationDictionary = new Map(rows.map(row => [normalizeSpanish(row.spanish_word), row.english_word]));
         const pages = [...new Set(rows.map(row => row.page_number))];
         select.replaceChildren(...pages.map(page => {
           const option = document.createElement("option");
@@ -755,8 +762,55 @@
       const pageNumber = Number($("#pageSelect").value);
       $("#readerHeading").textContent = `Page ${pageNumber}`;
       $("#readerContent").innerHTML = readingPages[pageNumber] || "<h2>Page unavailable</h2><p>No large-print page has been prepared for this page number.</p>";
+      annotateReaderTranslations();
       $("#readerScrollRegion").scrollTop = 0;
       window.requestAnimationFrame(updateReaderScrollbar);
+    }
+
+    function annotateReaderTranslations() {
+      const content = $("#readerContent");
+      const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+      const textNodes = [];
+      while (walker.nextNode()) {
+        if (!walker.currentNode.parentElement.closest('[lang="en"], .translated-word')) textNodes.push(walker.currentNode);
+      }
+      textNodes.forEach(node => {
+        const fragment = document.createDocumentFragment();
+        let lastIndex = 0;
+        for (const match of node.textContent.matchAll(/[\p{L}\p{M}]+/gu)) {
+          const translation = translationDictionary.get(normalizeSpanish(match[0]));
+          if (!translation) continue;
+          fragment.append(node.textContent.slice(lastIndex, match.index));
+          const word = document.createElement("span");
+          word.className = "translated-word";
+          word.textContent = match[0];
+          word.dataset.translation = translation;
+          word.setAttribute("aria-label", `${match[0]}: ${translation}`);
+          fragment.append(word);
+          lastIndex = match.index + match[0].length;
+        }
+        if (!lastIndex) return;
+        fragment.append(node.textContent.slice(lastIndex));
+        node.replaceWith(fragment);
+      });
+    }
+
+    function showTranslationBubble(word) {
+      const bubble = $("#translationBubble");
+      bubble.textContent = `${word.textContent}: ${word.dataset.translation}`;
+      bubble.classList.add("show");
+      const wordRect = word.getBoundingClientRect();
+      const bubbleRect = bubble.getBoundingClientRect();
+      const left = Math.max(10, Math.min(window.innerWidth - bubbleRect.width - 10, wordRect.left + wordRect.width / 2 - bubbleRect.width / 2));
+      let top = wordRect.top - bubbleRect.height - 12;
+      if (top < 10) top = wordRect.bottom + 12;
+      bubble.style.left = `${left}px`;
+      bubble.style.top = `${top}px`;
+    }
+
+    function hideTranslationBubble() {
+      window.clearTimeout(translationBubbleTimer);
+      $("#translationBubble").classList.remove("show");
     }
 
     function updateReaderScrollbar() {
@@ -923,7 +977,25 @@
     quizButton.addEventListener("click", () => setMode("quiz"));
     $("#pageReaderButton").addEventListener("click", openReadingPage);
     $("#readerClose").addEventListener("click", () => $("#pageReader").close());
-    $("#readerScrollRegion").addEventListener("scroll", updateReaderScrollbar, { passive: true });
+    $("#readerContent").addEventListener("pointerover", event => {
+      const word = event.target.closest(".translated-word");
+      if (word) showTranslationBubble(word);
+    });
+    $("#readerContent").addEventListener("pointerout", event => {
+      const word = event.target.closest(".translated-word");
+      if (word && !word.contains(event.relatedTarget)) hideTranslationBubble();
+    });
+    $("#readerContent").addEventListener("click", event => {
+      const word = event.target.closest(".translated-word");
+      if (!word) return;
+      showTranslationBubble(word);
+      window.clearTimeout(translationBubbleTimer);
+      translationBubbleTimer = window.setTimeout(hideTranslationBubble, 3000);
+    });
+    $("#readerScrollRegion").addEventListener("scroll", () => {
+      updateReaderScrollbar();
+      hideTranslationBubble();
+    }, { passive: true });
     $("#readerScrollbar").addEventListener("pointerdown", event => {
       const region = $("#readerScrollRegion");
       const track = $("#readerScrollbar");
@@ -953,7 +1025,10 @@
       track.addEventListener("pointercancel", stop);
     });
     window.addEventListener("resize", updateReaderScrollbar);
-    $("#pageReader").addEventListener("close", () => $("#pageReaderButton").classList.remove("active"));
+    $("#pageReader").addEventListener("close", () => {
+      $("#pageReaderButton").classList.remove("active");
+      hideTranslationBubble();
+    });
     $("#pageReader").addEventListener("click", event => {
       if (event.target === event.currentTarget) event.currentTarget.close();
     });
