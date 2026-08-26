@@ -60,12 +60,12 @@
     .range-option input:checked + label { border-color: var(--coral); color: white; background: var(--coral); box-shadow: 0 4px 12px rgba(233,99,79,.2); }
     .range-option input:focus-visible + label { outline: 3px solid rgba(242,188,85,.7); outline-offset: 2px; }
     .range-option input:disabled + label { border-style: dashed; color: #9c9c94; background: rgba(232,226,215,.48); cursor: not-allowed; opacity: .7; }
-    .sync-panel { margin: -8px 0 18px; }
+    .sync-panel { position: fixed; z-index: 30; top: 10px; left: 10px; margin: 0; }
     .sync-panel summary { width: max-content; padding: 8px 14px; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); background: rgba(255,253,247,.72); font-size: .9rem; font-weight: 800; cursor: pointer; list-style: none; }
     .sync-panel summary::-webkit-details-marker { display: none; }
     .sync-panel summary::before { content: "+ "; color: var(--teal); }
     .sync-panel[open] summary::before { content: "− "; }
-    .sync-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 10px; color: var(--muted); font-size: .95rem; font-weight: 750; }
+    .sync-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; width: min(760px, calc(100vw - 20px)); margin-top: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 14px; color: var(--muted); background: var(--cream); box-shadow: 0 12px 30px rgba(35,48,42,.16); font-size: .95rem; font-weight: 750; }
     .sync-code { width: 245px; padding: 10px 13px; border: 1px solid var(--line); border-radius: 11px; color: var(--ink); background: var(--paper); font: inherit; font-size: 1rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
     .sync-button { padding: 10px 15px; border: 1px solid var(--line); border-radius: 11px; color: var(--ink); background: var(--paper); font: inherit; font-weight: 800; cursor: pointer; }
     .sync-button:hover { border-color: var(--teal); background: #e6f2ef; }
@@ -225,7 +225,7 @@
     </main>
 
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.2.1</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.2.2</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
