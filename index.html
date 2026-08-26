@@ -318,7 +318,7 @@
     </dialog>
 
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.5.1</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.5.2</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
@@ -773,7 +773,9 @@
       const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
       const textNodes = [];
       while (walker.nextNode()) {
-        if (!walker.currentNode.parentElement.closest('[lang="en"], .translated-word')) textNodes.push(walker.currentNode);
+        const englishSection = walker.currentNode.parentElement.closest('[lang="en"]');
+        const isExplicitEnglish = englishSection && englishSection !== document.documentElement;
+        if (!isExplicitEnglish && !walker.currentNode.parentElement.closest(".translated-word")) textNodes.push(walker.currentNode);
       }
       textNodes.forEach(node => {
         const fragment = document.createDocumentFragment();
