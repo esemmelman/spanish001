@@ -50,6 +50,8 @@
     .mode-btn { border: 0; border-radius: 12px; padding: 14px 18px; color: var(--muted); background: transparent; font: inherit; font-size: 1.5rem; font-weight: 750; cursor: pointer; transition: .2s ease; }
     .mode-btn:hover { color: var(--ink); background: rgba(255,255,255,.7); }
     .mode-btn.active { color: white; background: var(--teal); box-shadow: 0 5px 14px rgba(29,118,105,.2); }
+    .page-reader-button { flex: 0 0 auto; color: white; background: var(--teal); box-shadow: 0 5px 14px rgba(29,118,105,.2); }
+    .page-reader-button:hover { color: white; background: #155f54; }
 
     .range-picker { flex: 1; margin: 0; min-width: 0; }
     .range-options { display: flex; flex-wrap: wrap; gap: 11px; }
@@ -140,6 +142,24 @@
     .result-message { margin: 24px 0 0; color: var(--teal); font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.2rem, 5vw, 4.5rem); font-weight: 700; }
     .quiz-result.fail .result-message { color: var(--coral-dark); }
 
+    .page-reader { width: min(1100px, calc(100% - 28px)); max-height: calc(100vh - 28px); padding: 0; border: 3px solid var(--teal); border-radius: 28px; color: #101714; background: #fffef9; box-shadow: 0 28px 80px rgba(12,40,35,.35); }
+    .page-reader::backdrop { background: rgba(10,28,25,.72); }
+    .reader-header { position: sticky; z-index: 2; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 28px; color: white; background: var(--teal); }
+    .reader-heading { margin: 0; font-size: clamp(2rem, 5vw, 3.4rem); }
+    .reader-close { min-width: 120px; padding: 13px 20px; border: 3px solid white; border-radius: 14px; color: white; background: transparent; font: inherit; font-size: 1.35rem; font-weight: 900; cursor: pointer; }
+    .reader-close:hover { color: var(--ink); background: white; }
+    .reader-content { padding: clamp(28px, 5vw, 64px); font-size: clamp(1.55rem, 2.5vw, 2rem); line-height: 1.55; }
+    .reader-content h2 { margin: 1.4em 0 .45em; color: #9d3328; font-size: 1.65em; line-height: 1.1; }
+    .reader-content h2:first-child { margin-top: 0; }
+    .reader-content h3 { margin: 1.2em 0 .35em; color: #155f54; font-size: 1.3em; line-height: 1.15; }
+    .reader-content p, .reader-content ul, .reader-content ol { margin: .6em 0; }
+    .reader-content li { margin: .35em 0; }
+    .reader-content blockquote { margin: .8em 0; padding: .5em .8em; border-left: 8px solid var(--gold); background: #fff6dc; }
+    .reader-table-wrap { overflow-x: auto; margin: .8em 0 1.3em; }
+    .reader-content table { width: 100%; border-collapse: collapse; font-size: .95em; }
+    .reader-content th, .reader-content td { padding: .45em .6em; border: 3px solid #9b382e; text-align: left; }
+    .reader-content th { color: white; background: #9b382e; }
+
     footer { display: flex; justify-content: space-between; gap: 20px; margin-top: 24px; color: var(--muted); font-size: 1rem; }
     kbd { padding: 2px 6px; border: 1px solid #cfc8ba; border-bottom-width: 2px; border-radius: 5px; background: #fffaf0; font-family: inherit; }
 
@@ -147,6 +167,7 @@
       .shell { padding-top: 26px; }
       .control-bar { align-items: stretch; flex-direction: column; }
       .mode-switch { width: 100%; }
+      .page-reader-button { width: 100%; }
       .sync-code { width: 100%; }
       main, .panel { min-height: 650px; }
       #flashcardPanel .topline { margin-bottom: 14px; }
@@ -159,6 +180,9 @@
       .choices { grid-template-columns: 1fr; }
       .choice { min-height: 70px; }
       footer { display: block; line-height: 1.7; }
+      .reader-header { padding: 15px 18px; }
+      .reader-close { min-width: 90px; padding: 10px 14px; }
+      .reader-content { font-size: 1.45rem; line-height: 1.5; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -169,6 +193,7 @@
 <body>
   <div class="shell">
     <div class="control-bar">
+      <button class="mode-btn page-reader-button" id="pageReaderButton" type="button" aria-haspopup="dialog">Page</button>
       <label class="page-control" for="pageSelect">
         Page No.
         <select class="page-select" id="pageSelect" aria-label="Page number">
@@ -241,13 +266,96 @@
       </section>
     </main>
 
+    <dialog class="page-reader" id="pageReader" aria-labelledby="readerHeading">
+      <header class="reader-header">
+        <h1 class="reader-heading" id="readerHeading">Page 1</h1>
+        <button class="reader-close" id="readerClose" type="button">Close</button>
+      </header>
+      <article class="reader-content" id="readerContent"></article>
+    </dialog>
+
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.2.8</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.3.0</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
 
   <script>
+    const readingPages = {
+      1: `
+        <h2>Para empezar</h2>
+        <h3>Chapter Objectives — Communication</h3>
+        <p>By the end of <em>Para empezar</em> you will be able to:</p>
+        <ul><li>Talk about your daily life.</li><li>Write about leisure and after-school activities.</li></ul>
+        <p><strong>You will demonstrate what you know and can do:</strong></p>
+        <ul><li>Presentación oral: Mi vida</li><li>Presentación escrita: Actividades en mi comunidad</li></ul>
+        <h3>1. Tu vida diaria</h3>
+        <ul><li>Talk about school and non-school daily activities.</li><li>Describe your day before and after school.</li></ul>
+        <h3>2. Días especiales</h3>
+        <ul><li>Talk about weekend activities.</li><li>Discuss special events, celebrations, and vacations.</li></ul>
+        <h2>Arte y cultura — España</h2>
+        <h3>Vida diaria de los jóvenes</h3>
+        <p>¿Qué cosas son importantes para los jóvenes de España?</p>
+        <p>Según una encuesta, para los jóvenes españoles son importantes los amigos, la familia, la salud, la libertad, las cosas que tienen, el tiempo libre, los estudios, la situación económica y el trabajo.</p>
+        <p>¿Qué hacen en su tiempo libre? Los días de semana practican deportes, estudian instrumentos musicales o idiomas, escuchan música, ven la televisión o usan la computadora. Los fines de semana salen con sus amigos, van al cine o a bailar.</p>
+        <blockquote>¿En qué te pareces y en qué te diferencias de los jóvenes que respondieron a la encuesta?</blockquote>`,
+      2: `
+        <h2>1. Tu vida diaria</h2>
+        <h3>¿Cómo pasan los días los jóvenes?</h3>
+        <h3>Rosa</h3>
+        <blockquote>Durante la semana trabajo de las 3 a las 6 en el supermercado y por la noche tengo que estudiar. Me gusta poner música cuando hago la tarea para la escuela. Los fines de semana mi novio y yo vamos al parque para jugar con el perro. En el invierno nos gusta pasar tiempo en el gimnasio. Tienen una piscina excelente.</blockquote>
+        <h3>Nacho</h3>
+        <blockquote>Juego al fútbol en el otoño y al béisbol en la primavera, así que tengo práctica todos los días. Por la noche tengo que hacer la tarea y ayudar a mi hermano con las matemáticas. Los fines de semana salgo con mis amigos a jugar deportes o vamos al centro comunitario para jugar a los videojuegos.</blockquote>
+        <h2>1. ¿Qué hacen?</h2>
+        <p><strong>Leer, hablar en pareja.</strong> Contesta las preguntas sobre los blogs de los jóvenes.</p>
+        <ol><li>¿Cuántas horas trabaja Rosa y dónde?</li><li>¿Adónde va para jugar con el perro y con quién?</li><li>¿Qué deportes juega Nacho?</li><li>¿Qué hace Nacho por la noche?</li><li>¿Con qué elementos de la vida de Nacho y Rosa te identificas?</li></ol>
+        <h2>2. Tu vida diaria</h2>
+        <p><strong>Escribir.</strong> ¿Qué haces durante el día? Completa las frases con lo que haces en un día típico.</p>
+        <ol><li>Voy…</li><li>Hago…</li><li>Tomo…</li><li>Juego…</li><li>Pongo…</li><li>Salgo…</li><li>Miro…</li><li>Ayudo…</li><li>Estudio…</li><li>Escucho…</li></ol>`,
+      3: `
+        <h2>Gramática — Repaso</h2>
+        <h3>Verbos irregulares</h3>
+        <p>Some Spanish verbs are irregular in the first-person singular of the present tense.</p>
+        <div class="reader-table-wrap"><table><thead><tr><th>Infinitive</th><th>Yo form</th></tr></thead><tbody>
+        <tr><td>conocer</td><td>conozco</td></tr><tr><td>dar</td><td>doy</td></tr><tr><td>hacer</td><td>hago</td></tr><tr><td>poner</td><td>pongo</td></tr><tr><td>saber</td><td>sé</td></tr><tr><td>salir</td><td>salgo</td></tr><tr><td>traer</td><td>traigo</td></tr><tr><td>ver</td><td>veo</td></tr><tr><td>caer</td><td>caigo</td></tr></tbody></table></div>
+        <h3>Irregular in all persons</h3>
+        <div class="reader-table-wrap"><table><thead><tr><th>Verb</th><th>yo</th><th>nosotros</th><th>tú</th><th>vosotros</th><th>él/ella</th><th>ellos/ellas</th></tr></thead><tbody>
+        <tr><th>ser</th><td>soy</td><td>somos</td><td>eres</td><td>sois</td><td>es</td><td>son</td></tr><tr><th>ir</th><td>voy</td><td>vamos</td><td>vas</td><td>vais</td><td>va</td><td>van</td></tr><tr><th>decir</th><td>digo</td><td>decimos</td><td>dices</td><td>decís</td><td>dice</td><td>dicen</td></tr><tr><th>estar</th><td>estoy</td><td>estamos</td><td>estás</td><td>estáis</td><td>está</td><td>están</td></tr><tr><th>oír</th><td>oigo</td><td>oímos</td><td>oyes</td><td>oís</td><td>oye</td><td>oyen</td></tr><tr><th>tener</th><td>tengo</td><td>tenemos</td><td>tienes</td><td>tenéis</td><td>tiene</td><td>tienen</td></tr></tbody></table></div>
+        <h2>3. ¿Qué haces tú?</h2>
+        <p><strong>Hablar en pareja.</strong> No todas las personas hacen las mismas actividades durante el día. Trabaja con otro(a) estudiante para hablar sobre las actividades que hacen usando los verbos del recuadro. Usen ¿qué?, ¿cómo?, ¿cuándo?, ¿dónde?, ¿para qué?, ¿a qué hora? y ¿por qué? para hacer las preguntas.</p>
+        <h3>Videomodelo</h3><blockquote><strong>A:</strong> ¿A qué hora desayunas?<br><strong>B:</strong> Yo desayuno a las ocho de la mañana.</blockquote>
+        <p><strong>Verbos:</strong> comer; estudiar; ir al gimnasio; ver la tele; salir de paseo; ir de compras; hacer la tarea; hacer o practicar un deporte; hablar por teléfono; tomar el desayuno; ir a la escuela; llegar; tomar lecciones; navegar en la Red.</p>`,
+      4: `
+        <h2>4. Elena y su familia</h2>
+        <p><strong>Leer, escuchar.</strong> Lee la siguiente descripción de Elena de los quehaceres que hace cada miembro de su familia.</p>
+        <blockquote>En mi familia todos ayudamos con los quehaceres de la casa. Cada uno de nosotros tiene una tarea específica.</blockquote>
+        <h3>Mamá</h3><ul><li>preparar el almuerzo</li><li>limpiar la cocina y el baño</li><li>lavar la ropa</li></ul>
+        <h3>Papá</h3><ul><li>hacer el desayuno</li><li>cortar el césped</li><li>lavar el coche</li></ul>
+        <h3>Yo</h3><ul><li>arreglar mi cuarto</li><li>dar de comer al perro</li><li>poner la mesa</li></ul>
+        <h3>Mi hermano mayor</h3><ul><li>preparar la cena</li><li>arreglar su cuarto y hacer la cama</li><li>pasar la aspiradora</li></ul>
+        <p>Como todos ayudamos con los quehaceres, las tareas se hacen más rápido y tenemos más tiempo libre.</p>
+        <p><strong>Escuchar:</strong> Escribe los números del 1 al 6 en una hoja. Escucha las frases y escribe C si la frase es cierta y F si es falsa.</p>
+        <h2>5. En tu familia</h2>
+        <ol><li>Escribe una breve descripción sobre quiénes hacen los quehaceres en tu casa y qué hace cada uno. Escribe la información en forma de frase.</li><li>Trabaja con un(a) compañero(a) para comparar las descripciones que escribieron. Decidan qué actividades tienen en común y por qué.</li></ol>
+        <h2>6. Tu actividad favorita</h2>
+        <ol><li>Describe cuál es tu actividad favorita. No digas qué es. Usa oraciones conectadas con detalles y elaboradas.<br><strong>Modelo:</strong> Leo mis libros. Escribo muchas cosas.</li><li>En grupo, cada uno(a) lee su descripción. El resto debe adivinar de qué actividad se trata.<br><strong>Modelo:</strong> Tu actividad favorita es hacer la tarea.</li></ol>`,
+      5: `
+        <h2>Gramática — Repaso</h2>
+        <h3>Presente de los verbos con cambios de raíz</h3>
+        <p>In Spanish there are three groups of stem-changing verbs. The stem change occurs in all forms except <em>nosotros(as)</em> and <em>vosotros(as)</em>.</p>
+        <div class="reader-table-wrap"><table><thead><tr><th>Verb</th><th>yo</th><th>nosotros</th><th>tú</th><th>vosotros</th><th>él/ella</th><th>ellos/ellas</th></tr></thead><tbody>
+        <tr><th>perder (e → ie)</th><td>pierdo</td><td>perdemos</td><td>pierdes</td><td>perdéis</td><td>pierde</td><td>pierden</td></tr><tr><th>poder (o → ue)</th><td>puedo</td><td>podemos</td><td>puedes</td><td>podéis</td><td>puede</td><td>pueden</td></tr><tr><th>pedir (e → i)</th><td>pido</td><td>pedimos</td><td>pides</td><td>pedís</td><td>pide</td><td>piden</td></tr></tbody></table></div>
+        <h3>Other verbs like perder</h3><p>empezar, querer, preferir, pensar, divertirse, despertarse, sentirse, mentir, cerrar, comenzar, entender.</p>
+        <h3>Other verbs like poder</h3><p>jugar (u → ue), contar, costar, encontrar, recordar, volar, dormir, volver, devolver, acostarse, almorzar.</p>
+        <h3>Other verbs like pedir</h3><p>servir, repetir, reír, sonreír, seguir, vestirse.</p>
+        <h2>7. Vida deportiva</h2>
+        <p><strong>Leer, escribir.</strong> Completa el párrafo con la forma correcta del verbo apropiado en el presente.</p>
+        <blockquote>Después de la escuela yo <strong>1.</strong> (preferir / dormir) ir al club para jugar al fútbol. Mis compañeras y yo <strong>2.</strong> (recordar / jugar) bastante bien pero nuestra entrenadora <strong>3.</strong> (poder / pensar) que el equipo rival <strong>4.</strong> (empezar / jugar) mejor. A veces nosotras <strong>5.</strong> (perder / servir) un partido, pero cuando nuestro equipo <strong>6.</strong> (poder / comenzar) meter un gol es fabuloso.</blockquote>
+        <h2>8. Actividades de la semana</h2>
+        <p><strong>Escribir.</strong> Haz planes con otro(a) estudiante por texto. Usa los verbos del recuadro: servir, dormir, querer, poder, perder, sentirse, jugar, preferir.</p>
+        <h3>Modelo</h3><blockquote><strong>A:</strong> ¿Qué quieres hacer después de la escuela? ¿Vamos al cine?<br><strong>B:</strong> No puedo. Tengo que estudiar.</blockquote>`
+    };
+
     const vocabulary = [
       ["a", "to / at"], ["actividades", "activities"], ["al", "to the"], ["amigos", "friends"],
       ["arte", "art"], ["bailar", "to dance"], ["cine", "movie theater"], ["computadora", "computer"],
@@ -575,6 +683,18 @@
       }
     }
 
+    function renderReadingPage() {
+      const pageNumber = Number($("#pageSelect").value);
+      $("#readerHeading").textContent = `Page ${pageNumber}`;
+      $("#readerContent").innerHTML = readingPages[pageNumber] || "<h2>Page unavailable</h2><p>No large-print page has been prepared for this page number.</p>";
+      $("#pageReader").scrollTop = 0;
+    }
+
+    function openReadingPage() {
+      renderReadingPage();
+      $("#pageReader").showModal();
+    }
+
     function renderCard() {
       hideGroupEnd();
       card.classList.remove("flipped");
@@ -713,7 +833,15 @@
 
     flashcardButton.addEventListener("click", () => setMode("cards"));
     quizButton.addEventListener("click", () => setMode("quiz"));
-    $("#pageSelect").addEventListener("change", event => loadPage(event.target.value));
+    $("#pageReaderButton").addEventListener("click", openReadingPage);
+    $("#readerClose").addEventListener("click", () => $("#pageReader").close());
+    $("#pageReader").addEventListener("click", event => {
+      if (event.target === event.currentTarget) event.currentTarget.close();
+    });
+    $("#pageSelect").addEventListener("change", event => {
+      loadPage(event.target.value);
+      if ($("#pageReader").open) renderReadingPage();
+    });
     $("#syncCode").addEventListener("input", event => { event.target.value = formatSyncCode(event.target.value); });
     $("#useSyncCode").addEventListener("click", () => connectSyncCode($("#syncCode").value));
     $("#copySyncCode").addEventListener("click", async () => {
