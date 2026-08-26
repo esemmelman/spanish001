@@ -93,8 +93,8 @@
     .face { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; border-radius: 32px; backface-visibility: hidden; text-align: center; }
     .front { color: white; background: var(--teal); box-shadow: 0 18px 32px rgba(29,118,105,.2); }
     .back { transform: rotateY(180deg); color: var(--ink); border: 2px solid var(--gold); background: #fff8e8; box-shadow: 0 18px 32px rgba(80,62,28,.12); }
-    .word { font-family: Georgia, "Times New Roman", serif; font-size: clamp(5.5rem, 12vw, 11rem); line-height: .92; letter-spacing: -.055em; }
-    .translation { font-family: Georgia, "Times New Roman", serif; font-size: clamp(4.5rem, 9vw, 8.5rem); line-height: .98; letter-spacing: -.035em; }
+    .word { max-width: 100%; overflow-wrap: anywhere; font-family: Georgia, "Times New Roman", serif; font-size: clamp(5.5rem, 12vw, 11rem); line-height: .92; letter-spacing: -.055em; }
+    .translation { max-width: 100%; overflow-wrap: anywhere; font-family: Georgia, "Times New Roman", serif; font-size: clamp(4.5rem, 9vw, 8.5rem); line-height: .98; letter-spacing: -.035em; }
     .group-end { position: absolute; z-index: 5; inset: 0; display: none; place-items: center; overflow: hidden; padding: 24px; border-radius: 32px; background: radial-gradient(circle at 50% 45%, #fff1bd 0 2%, transparent 3%), linear-gradient(135deg, #173f38, var(--teal) 58%, #1e8978); text-align: center; }
     .group-end::before, .group-end::after { content: ""; position: absolute; width: 210px; height: 210px; border: 24px solid rgba(242,188,85,.35); border-radius: 50%; }
     .group-end::before { top: -115px; left: -70px; }
@@ -151,6 +151,9 @@
       main, .panel { min-height: 650px; }
       #flashcardPanel .topline { margin-bottom: 14px; }
       .card { width: 100%; height: 280px; }
+      .face { padding: 24px 18px; }
+      .word { font-size: clamp(2.4rem, 11vw, 4.5rem); line-height: 1; }
+      .translation { font-size: clamp(2rem, 9.5vw, 3.8rem); line-height: 1.05; }
       .nav-row { display: flex; justify-content: space-between; gap: 12px; }
       .nav-control, #previousCard, #nextCard { min-width: 0; flex: 1; padding-right: 15px; padding-left: 15px; font-size: 1.4rem; }
       .choices { grid-template-columns: 1fr; }
@@ -239,7 +242,7 @@
     </main>
 
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.2.7</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.2.8</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
