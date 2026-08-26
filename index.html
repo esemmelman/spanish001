@@ -143,13 +143,13 @@
     .result-message { margin: 24px 0 0; color: var(--teal); font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.2rem, 5vw, 4.5rem); font-weight: 700; }
     .quiz-result.fail .result-message { color: var(--coral-dark); }
 
-    .page-reader { width: min(1100px, calc(100% - 28px)); max-height: calc(100vh - 28px); padding: 0; border: 3px solid var(--teal); border-radius: 28px; color: #101714; background: #fffef9; box-shadow: 0 28px 80px rgba(12,40,35,.35); }
+    .page-reader { width: min(1100px, calc(100% - 28px)); max-height: calc(100vh - 28px); overflow-x: hidden; padding: 0; border: 3px solid var(--teal); border-radius: 28px; color: #101714; background: #fffef9; box-shadow: 0 28px 80px rgba(12,40,35,.35); }
     .page-reader::backdrop { background: rgba(10,28,25,.72); }
     .reader-header { position: sticky; z-index: 2; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 28px; color: white; background: var(--teal); }
     .reader-heading { margin: 0; font-size: clamp(2rem, 5vw, 3.4rem); }
     .reader-close { min-width: 120px; padding: 13px 20px; border: 3px solid white; border-radius: 14px; color: white; background: transparent; font: inherit; font-size: 1.35rem; font-weight: 900; cursor: pointer; }
     .reader-close:hover { color: var(--ink); background: white; }
-    .reader-content { padding: clamp(28px, 5vw, 64px); font-size: clamp(1.85rem, 3vw, 2.45rem); line-height: 1.55; }
+    .reader-content { min-width: 0; overflow-x: hidden; padding: clamp(28px, 5vw, 64px); font-size: clamp(1.85rem, 3vw, 2.45rem); line-height: 1.55; }
     .reader-content h2 { margin: 1.4em 0 .45em; color: #9d3328; font-size: 1.65em; line-height: 1.1; }
     .reader-content h2:first-child { margin-top: 0; }
     .reader-content h3 { margin: 1.2em 0 .35em; color: #155f54; font-size: 1.3em; line-height: 1.15; }
@@ -161,8 +161,9 @@
     .reader-content table { width: 100%; border-collapse: collapse; font-size: .95em; }
     .reader-content th, .reader-content td { padding: .45em .6em; border: 3px solid #9b382e; text-align: left; }
     .reader-content th { color: white; background: #9b382e; }
-    .conjugation-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr)); gap: 24px; margin: .8em 0 1.3em; }
+    .conjugation-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; margin: .8em 0 1.3em; }
     .conjugation-grid table { height: max-content; margin: 0; }
+    .conjugation-grid td { width: 50%; overflow-wrap: anywhere; }
     .conjugation-grid th[colspan] { font-size: 1.15em; text-align: center; }
     .reader-content, .reader-content h2, .reader-content h3, .reader-content p, .reader-content li, .reader-content blockquote, .reader-content table, .reader-content th, .reader-content td, .reader-content strong, .reader-content em {
       color: #a73429;
@@ -203,6 +204,9 @@
       .reader-header { padding: 15px 18px; }
       .reader-close { min-width: 90px; padding: 10px 14px; }
       .reader-content { padding: 26px 20px 44px; }
+      .conjugation-grid tbody tr { display: block; }
+      .conjugation-grid td { display: block; width: 100%; }
+      .conjugation-grid td + td { border-top: 0; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -295,7 +299,7 @@
     </dialog>
 
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.3.6</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.3.7</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
