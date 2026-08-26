@@ -101,9 +101,7 @@
     .group-end::after { right: -75px; bottom: -125px; border-color: rgba(233,99,79,.45); }
     .group-end.show { display: grid; }
     .group-end.show .group-end-content { animation: groupComplete .45s cubic-bezier(.2,.8,.2,1) both; }
-    .group-end-content { position: relative; z-index: 1; display: grid; justify-items: center; width: min(570px, 92%); padding: 24px 34px 28px; border: 3px solid var(--gold); border-radius: 26px; color: var(--ink); background: var(--paper); box-shadow: 0 18px 45px rgba(9,39,34,.35); }
-    .group-end-badge { display: grid; place-items: center; width: 68px; height: 68px; margin-top: -54px; border: 5px solid var(--paper); border-radius: 50%; color: #634816; background: var(--gold); box-shadow: 0 7px 18px rgba(54,39,10,.25); font-size: 2.4rem; font-weight: 950; }
-    .group-end-label { margin: 12px 0 4px; color: var(--coral-dark); font-size: 1rem; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
+    .group-end-content { position: relative; z-index: 1; display: grid; place-items: center; width: min(570px, 92%); min-height: 180px; padding: 28px 34px; border: 3px solid var(--gold); border-radius: 26px; color: var(--ink); background: var(--paper); box-shadow: 0 18px 45px rgba(9,39,34,.35); }
     .group-end-title { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(3rem, 7vw, 6rem); font-weight: 800; line-height: .9; letter-spacing: -.04em; }
     @keyframes groupComplete { from { opacity: 0; transform: scale(.72) rotate(-3deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
     .nav-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; width: 100%; margin-top: 30px; }
@@ -213,9 +211,7 @@
           </div>
           <div class="group-end" id="groupEnd" role="status" aria-live="assertive">
             <div class="group-end-content">
-              <span class="group-end-badge" aria-hidden="true">✓</span>
-              <p class="group-end-label">Nice work!</p>
-              <p class="group-end-title">End of Group</p>
+              <p class="group-end-title">End of Deck</p>
             </div>
           </div>
         </div>
@@ -243,7 +239,7 @@
     </main>
 
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.2.5</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.2.6</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
