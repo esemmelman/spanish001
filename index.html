@@ -148,17 +148,21 @@
     .reader-heading { margin: 0; font-size: clamp(2rem, 5vw, 3.4rem); }
     .reader-close { min-width: 120px; padding: 13px 20px; border: 3px solid white; border-radius: 14px; color: white; background: transparent; font: inherit; font-size: 1.35rem; font-weight: 900; cursor: pointer; }
     .reader-close:hover { color: var(--ink); background: white; }
-    .reader-content { padding: clamp(28px, 5vw, 64px); font-size: clamp(1.55rem, 2.5vw, 2rem); line-height: 1.55; }
+    .reader-content { padding: clamp(28px, 5vw, 64px); font-size: clamp(1.85rem, 3vw, 2.45rem); line-height: 1.55; }
     .reader-content h2 { margin: 1.4em 0 .45em; color: #9d3328; font-size: 1.65em; line-height: 1.1; }
     .reader-content h2:first-child { margin-top: 0; }
     .reader-content h3 { margin: 1.2em 0 .35em; color: #155f54; font-size: 1.3em; line-height: 1.15; }
     .reader-content p, .reader-content ul, .reader-content ol { margin: .6em 0; }
-    .reader-content li { margin: .35em 0; }
+    .reader-content p, .reader-content li { font-size: 1.08em; }
+    .reader-content li { margin: .5em 0; }
     .reader-content blockquote { margin: .8em 0; padding: .5em .8em; border-left: 8px solid var(--gold); background: #fff6dc; }
     .reader-table-wrap { overflow-x: auto; margin: .8em 0 1.3em; }
     .reader-content table { width: 100%; border-collapse: collapse; font-size: .95em; }
     .reader-content th, .reader-content td { padding: .45em .6em; border: 3px solid #9b382e; text-align: left; }
     .reader-content th { color: white; background: #9b382e; }
+    .conjugation-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr)); gap: 24px; margin: .8em 0 1.3em; }
+    .conjugation-grid table { height: max-content; margin: 0; }
+    .conjugation-grid th[colspan] { font-size: 1.15em; text-align: center; }
 
     footer { display: flex; justify-content: space-between; gap: 20px; margin-top: 24px; color: var(--muted); font-size: 1rem; }
     kbd { padding: 2px 6px; border: 1px solid #cfc8ba; border-bottom-width: 2px; border-radius: 5px; background: #fffaf0; font-family: inherit; }
@@ -182,7 +186,8 @@
       footer { display: block; line-height: 1.7; }
       .reader-header { padding: 15px 18px; }
       .reader-close { min-width: 90px; padding: 10px 14px; }
-      .reader-content { font-size: 1.45rem; line-height: 1.5; }
+      .reader-content { padding: 26px 20px 44px; font-size: 1.7rem; line-height: 1.5; }
+      .reader-content table { font-size: 1em; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -275,7 +280,7 @@
     </dialog>
 
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.3.0</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.3.1</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
@@ -319,8 +324,14 @@
         <div class="reader-table-wrap"><table><thead><tr><th>Infinitive</th><th>Yo form</th></tr></thead><tbody>
         <tr><td>conocer</td><td>conozco</td></tr><tr><td>dar</td><td>doy</td></tr><tr><td>hacer</td><td>hago</td></tr><tr><td>poner</td><td>pongo</td></tr><tr><td>saber</td><td>sé</td></tr><tr><td>salir</td><td>salgo</td></tr><tr><td>traer</td><td>traigo</td></tr><tr><td>ver</td><td>veo</td></tr><tr><td>caer</td><td>caigo</td></tr></tbody></table></div>
         <h3>Irregular in all persons</h3>
-        <div class="reader-table-wrap"><table><thead><tr><th>Verb</th><th>yo</th><th>nosotros</th><th>tú</th><th>vosotros</th><th>él/ella</th><th>ellos/ellas</th></tr></thead><tbody>
-        <tr><th>ser</th><td>soy</td><td>somos</td><td>eres</td><td>sois</td><td>es</td><td>son</td></tr><tr><th>ir</th><td>voy</td><td>vamos</td><td>vas</td><td>vais</td><td>va</td><td>van</td></tr><tr><th>decir</th><td>digo</td><td>decimos</td><td>dices</td><td>decís</td><td>dice</td><td>dicen</td></tr><tr><th>estar</th><td>estoy</td><td>estamos</td><td>estás</td><td>estáis</td><td>está</td><td>están</td></tr><tr><th>oír</th><td>oigo</td><td>oímos</td><td>oyes</td><td>oís</td><td>oye</td><td>oyen</td></tr><tr><th>tener</th><td>tengo</td><td>tenemos</td><td>tienes</td><td>tenéis</td><td>tiene</td><td>tienen</td></tr></tbody></table></div>
+        <div class="conjugation-grid">
+          <table><thead><tr><th colspan="2">ser</th></tr></thead><tbody><tr><td>yo</td><td>soy</td></tr><tr><td>nosotros</td><td>somos</td></tr><tr><td>tú</td><td>eres</td></tr><tr><td>vosotros</td><td>sois</td></tr><tr><td>él/ella</td><td>es</td></tr><tr><td>ellos/ellas</td><td>son</td></tr></tbody></table>
+          <table><thead><tr><th colspan="2">ir</th></tr></thead><tbody><tr><td>yo</td><td>voy</td></tr><tr><td>nosotros</td><td>vamos</td></tr><tr><td>tú</td><td>vas</td></tr><tr><td>vosotros</td><td>vais</td></tr><tr><td>él/ella</td><td>va</td></tr><tr><td>ellos/ellas</td><td>van</td></tr></tbody></table>
+          <table><thead><tr><th colspan="2">decir</th></tr></thead><tbody><tr><td>yo</td><td>digo</td></tr><tr><td>nosotros</td><td>decimos</td></tr><tr><td>tú</td><td>dices</td></tr><tr><td>vosotros</td><td>decís</td></tr><tr><td>él/ella</td><td>dice</td></tr><tr><td>ellos/ellas</td><td>dicen</td></tr></tbody></table>
+          <table><thead><tr><th colspan="2">estar</th></tr></thead><tbody><tr><td>yo</td><td>estoy</td></tr><tr><td>nosotros</td><td>estamos</td></tr><tr><td>tú</td><td>estás</td></tr><tr><td>vosotros</td><td>estáis</td></tr><tr><td>él/ella</td><td>está</td></tr><tr><td>ellos/ellas</td><td>están</td></tr></tbody></table>
+          <table><thead><tr><th colspan="2">oír</th></tr></thead><tbody><tr><td>yo</td><td>oigo</td></tr><tr><td>nosotros</td><td>oímos</td></tr><tr><td>tú</td><td>oyes</td></tr><tr><td>vosotros</td><td>oís</td></tr><tr><td>él/ella</td><td>oye</td></tr><tr><td>ellos/ellas</td><td>oyen</td></tr></tbody></table>
+          <table><thead><tr><th colspan="2">tener</th></tr></thead><tbody><tr><td>yo</td><td>tengo</td></tr><tr><td>nosotros</td><td>tenemos</td></tr><tr><td>tú</td><td>tienes</td></tr><tr><td>vosotros</td><td>tenéis</td></tr><tr><td>él/ella</td><td>tiene</td></tr><tr><td>ellos/ellas</td><td>tienen</td></tr></tbody></table>
+        </div>
         <h2>3. ¿Qué haces tú?</h2>
         <p><strong>Hablar en pareja.</strong> No todas las personas hacen las mismas actividades durante el día. Trabaja con otro(a) estudiante para hablar sobre las actividades que hacen usando los verbos del recuadro. Usen ¿qué?, ¿cómo?, ¿cuándo?, ¿dónde?, ¿para qué?, ¿a qué hora? y ¿por qué? para hacer las preguntas.</p>
         <h3>Videomodelo</h3><blockquote><strong>A:</strong> ¿A qué hora desayunas?<br><strong>B:</strong> Yo desayuno a las ocho de la mañana.</blockquote>
@@ -343,8 +354,11 @@
         <h2>Gramática — Repaso</h2>
         <h3>Presente de los verbos con cambios de raíz</h3>
         <p>In Spanish there are three groups of stem-changing verbs. The stem change occurs in all forms except <em>nosotros(as)</em> and <em>vosotros(as)</em>.</p>
-        <div class="reader-table-wrap"><table><thead><tr><th>Verb</th><th>yo</th><th>nosotros</th><th>tú</th><th>vosotros</th><th>él/ella</th><th>ellos/ellas</th></tr></thead><tbody>
-        <tr><th>perder (e → ie)</th><td>pierdo</td><td>perdemos</td><td>pierdes</td><td>perdéis</td><td>pierde</td><td>pierden</td></tr><tr><th>poder (o → ue)</th><td>puedo</td><td>podemos</td><td>puedes</td><td>podéis</td><td>puede</td><td>pueden</td></tr><tr><th>pedir (e → i)</th><td>pido</td><td>pedimos</td><td>pides</td><td>pedís</td><td>pide</td><td>piden</td></tr></tbody></table></div>
+        <div class="conjugation-grid">
+          <table><thead><tr><th colspan="2">perder (e → ie)</th></tr></thead><tbody><tr><td>yo</td><td>pierdo</td></tr><tr><td>nosotros</td><td>perdemos</td></tr><tr><td>tú</td><td>pierdes</td></tr><tr><td>vosotros</td><td>perdéis</td></tr><tr><td>él/ella</td><td>pierde</td></tr><tr><td>ellos/ellas</td><td>pierden</td></tr></tbody></table>
+          <table><thead><tr><th colspan="2">poder (o → ue)</th></tr></thead><tbody><tr><td>yo</td><td>puedo</td></tr><tr><td>nosotros</td><td>podemos</td></tr><tr><td>tú</td><td>puedes</td></tr><tr><td>vosotros</td><td>podéis</td></tr><tr><td>él/ella</td><td>puede</td></tr><tr><td>ellos/ellas</td><td>pueden</td></tr></tbody></table>
+          <table><thead><tr><th colspan="2">pedir (e → i)</th></tr></thead><tbody><tr><td>yo</td><td>pido</td></tr><tr><td>nosotros</td><td>pedimos</td></tr><tr><td>tú</td><td>pides</td></tr><tr><td>vosotros</td><td>pedís</td></tr><tr><td>él/ella</td><td>pide</td></tr><tr><td>ellos/ellas</td><td>piden</td></tr></tbody></table>
+        </div>
         <h3>Other verbs like perder</h3><p>empezar, querer, preferir, pensar, divertirse, despertarse, sentirse, mentir, cerrar, comenzar, entender.</p>
         <h3>Other verbs like poder</h3><p>jugar (u → ue), contar, costar, encontrar, recordar, volar, dormir, volver, devolver, acostarse, almorzar.</p>
         <h3>Other verbs like pedir</h3><p>servir, repetir, reír, sonreír, seguir, vestirse.</p>
