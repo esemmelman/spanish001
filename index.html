@@ -239,7 +239,7 @@
     </main>
 
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.2.6</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.2.7</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
@@ -675,7 +675,7 @@
       const roundSize = activeWords.length;
       const passingScore = Math.ceil(roundSize * .8);
       const roundComplete = answered === roundSize;
-      feedback.textContent = correct ? "¡Correcto!" : `Not quite — ${quizCurrent[0]} means “${quizCurrent[1]}.”`;
+      feedback.textContent = correct ? "" : `Not quite — ${quizCurrent[0]} means “${quizCurrent[1]}.”`;
       if (roundComplete) {
         const passed = score >= passingScore;
         window.setTimeout(() => {
@@ -704,7 +704,6 @@
           }, 3000);
         }, correct ? 1000 : 1600);
       } else {
-        if (correct) feedback.textContent = "¡Correcto! Next word coming up…";
         window.setTimeout(newQuestion, 1350);
       }
     }
