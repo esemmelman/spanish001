@@ -174,6 +174,11 @@
       letter-spacing: -.025em;
     }
     .reader-content th { background: #fffef9; }
+    .reader-content p:nth-of-type(4n + 1) { color: #a73429; }
+    .reader-content p:nth-of-type(4n + 2) { color: #111; }
+    .reader-content p:nth-of-type(4n + 3) { color: #17685a; }
+    .reader-content p:nth-of-type(4n) { color: #9a6b00; }
+    .reader-content p strong, .reader-content p em { color: inherit; }
 
     footer { display: flex; justify-content: space-between; gap: 20px; margin-top: 24px; color: var(--muted); font-size: 1rem; }
     kbd { padding: 2px 6px; border: 1px solid #cfc8ba; border-bottom-width: 2px; border-radius: 5px; background: #fffaf0; font-family: inherit; }
@@ -290,7 +295,7 @@
     </dialog>
 
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.3.5</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.3.6</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
@@ -720,7 +725,9 @@
     function openReadingPage() {
       renderReadingPage();
       $("#pageReaderButton").classList.add("active");
-      $("#pageReader").showModal();
+      const reader = $("#pageReader");
+      reader.showModal();
+      window.requestAnimationFrame(() => reader.scrollTo({ top: 0, left: 0, behavior: "instant" }));
     }
 
     function renderCard() {
