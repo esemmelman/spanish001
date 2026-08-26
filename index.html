@@ -143,12 +143,18 @@
     .result-message { margin: 24px 0 0; color: var(--teal); font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.2rem, 5vw, 4.5rem); font-weight: 700; }
     .quiz-result.fail .result-message { color: var(--coral-dark); }
 
-    .page-reader { position: fixed; inset: 0; width: 100vw; max-width: none; height: 100vh; height: 100dvh; max-height: none; overflow-x: hidden; margin: 0; padding: 0; border: 0; border-radius: 0; color: #101714; background: #fffef9; }
+    .page-reader { position: fixed; inset: 0; width: 100vw; max-width: none; height: 100vh; height: 100dvh; max-height: none; overflow-x: hidden; overflow-y: scroll; scrollbar-gutter: stable; margin: 0; padding: 0; border: 0; border-radius: 0; color: #101714; background: #fffef9; }
+    .page-reader::-webkit-scrollbar { width: 18px; }
+    .page-reader::-webkit-scrollbar-track { background: #e8e2d7; }
+    .page-reader::-webkit-scrollbar-thumb { border: 3px solid #e8e2d7; border-radius: 99px; background: var(--teal); }
     .page-reader::backdrop { background: rgba(10,28,25,.72); }
     .reader-header { position: sticky; z-index: 2; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 28px; color: white; background: var(--teal); }
     .reader-heading { margin: 0; font-size: clamp(2rem, 5vw, 3.4rem); }
     .reader-close { min-width: 120px; padding: 13px 20px; border: 3px solid white; border-radius: 14px; color: white; background: transparent; font: inherit; font-size: 1.35rem; font-weight: 900; cursor: pointer; }
     .reader-close:hover { color: var(--ink); background: white; }
+    .reader-scroll-tools { position: fixed; z-index: 4; right: 24px; bottom: 24px; display: grid; gap: 12px; }
+    .reader-scroll-button { min-width: 150px; min-height: 70px; padding: 12px 20px; border: 4px solid white; border-radius: 18px; color: white; background: var(--teal); box-shadow: 0 8px 24px rgba(12,40,35,.35); font: inherit; font-size: 1.45rem; font-weight: 900; cursor: pointer; }
+    .reader-scroll-button:hover { background: #155f54; }
     .reader-content { min-width: 0; overflow-x: hidden; padding: clamp(28px, 5vw, 64px); font-size: clamp(1.85rem, 3vw, 2.45rem); line-height: 1.55; }
     .reader-content h2 { margin: 1.4em 0 .45em; color: #9d3328; font-size: 1.65em; line-height: 1.1; }
     .reader-content h2:first-child { margin-top: 0; }
@@ -203,6 +209,8 @@
       footer { display: block; line-height: 1.7; }
       .reader-header { padding: 15px 18px; }
       .reader-close { min-width: 90px; padding: 10px 14px; }
+      .reader-scroll-tools { right: 14px; bottom: 14px; }
+      .reader-scroll-button { min-width: 125px; min-height: 62px; font-size: 1.25rem; }
       .reader-content { padding: 26px 20px 44px; }
       .conjugation-grid tbody tr { display: block; }
       .conjugation-grid td { display: block; width: 100%; }
@@ -296,10 +304,14 @@
         <button class="reader-close" id="readerClose" type="button">Close</button>
       </header>
       <article class="reader-content" id="readerContent"></article>
+      <nav class="reader-scroll-tools" aria-label="Page scrolling">
+        <button class="reader-scroll-button" id="readerUp" type="button" aria-label="Scroll up">▲ Up</button>
+        <button class="reader-scroll-button" id="readerDown" type="button" aria-label="Scroll down">Down ▼</button>
+      </nav>
     </dialog>
 
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.4.0</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.4.1</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
@@ -892,6 +904,8 @@
     quizButton.addEventListener("click", () => setMode("quiz"));
     $("#pageReaderButton").addEventListener("click", openReadingPage);
     $("#readerClose").addEventListener("click", () => $("#pageReader").close());
+    $("#readerUp").addEventListener("click", () => $("#pageReader").scrollBy({ top: -window.innerHeight * .75, behavior: "smooth" }));
+    $("#readerDown").addEventListener("click", () => $("#pageReader").scrollBy({ top: window.innerHeight * .75, behavior: "smooth" }));
     $("#pageReader").addEventListener("close", () => $("#pageReaderButton").classList.remove("active"));
     $("#pageReader").addEventListener("click", event => {
       if (event.target === event.currentTarget) event.currentTarget.close();
