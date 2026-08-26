@@ -228,7 +228,7 @@
     </main>
 
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.2.3</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.2.4</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
@@ -570,6 +570,13 @@
     }
 
     function moveCard(direction) {
+      if (direction > 0 && cardIndex === deck.length - 1) {
+        showGroupEnd(() => {
+          cardIndex = 0;
+          renderCard();
+        });
+        return;
+      }
       hideGroupEnd();
       cardIndex = (cardIndex + direction + deck.length) % deck.length;
       renderCard();
@@ -597,14 +604,21 @@
       $("#groupEnd").classList.remove("show");
     }
 
+    function showGroupEnd(afterHide) {
+      const groupEnd = $("#groupEnd");
+      window.clearTimeout(groupEndTimer);
+      groupEnd.classList.add("show");
+      groupEndTimer = window.setTimeout(() => {
+        groupEnd.classList.remove("show");
+        if (afterHide) afterHide();
+      }, 2000);
+    }
+
     function flipCard() {
       const isFlippingToBack = !card.classList.contains("flipped");
       card.classList.toggle("flipped");
       if (isFlippingToBack && cardIndex === deck.length - 1) {
-        const groupEnd = $("#groupEnd");
-        window.clearTimeout(groupEndTimer);
-        groupEnd.classList.add("show");
-        groupEndTimer = window.setTimeout(() => groupEnd.classList.remove("show"), 2000);
+        showGroupEnd();
       }
     }
 
