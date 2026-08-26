@@ -157,6 +157,7 @@
     .reader-scroll-thumb { position: absolute; top: 0; right: 7px; left: 7px; min-height: 90px; border: 4px solid white; border-radius: 99px; background: var(--teal); box-shadow: 0 3px 10px rgba(12,40,35,.28); cursor: grab; touch-action: none; }
     .reader-scroll-thumb:active { cursor: grabbing; background: #155f54; }
     .translated-word { border-bottom: .08em dotted currentColor; cursor: help; }
+    .translated-word:hover { border-radius: .12em; background: #fff0a8; }
     .translation-bubble { position: fixed; z-index: 8; display: none; max-width: min(420px, calc(100vw - 24px)); padding: 12px 18px; border: 4px solid white; border-radius: 16px; color: white; background: #17322d; box-shadow: 0 8px 24px rgba(12,40,35,.4); font-family: Arial, Helvetica, sans-serif; font-size: 1.5rem; font-weight: 800; line-height: 1.2; text-align: center; pointer-events: none; }
     .translation-bubble.show { display: block; }
     .reader-content { min-width: 0; overflow-x: hidden; padding: clamp(28px, 5vw, 64px); font-size: clamp(1.85rem, 3vw, 2.45rem); line-height: 1.55; }
@@ -317,7 +318,7 @@
     </dialog>
 
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.5.0</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.5.1</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
@@ -785,6 +786,7 @@
           word.className = "translated-word";
           word.textContent = match[0];
           word.dataset.translation = translation;
+          word.title = translation;
           word.setAttribute("aria-label", `${match[0]}: ${translation}`);
           fragment.append(word);
           lastIndex = match.index + match[0].length;
@@ -977,11 +979,11 @@
     quizButton.addEventListener("click", () => setMode("quiz"));
     $("#pageReaderButton").addEventListener("click", openReadingPage);
     $("#readerClose").addEventListener("click", () => $("#pageReader").close());
-    $("#readerContent").addEventListener("pointerover", event => {
+    $("#readerContent").addEventListener("mouseover", event => {
       const word = event.target.closest(".translated-word");
       if (word) showTranslationBubble(word);
     });
-    $("#readerContent").addEventListener("pointerout", event => {
+    $("#readerContent").addEventListener("mouseout", event => {
       const word = event.target.closest(".translated-word");
       if (word && !word.contains(event.relatedTarget)) hideTranslationBubble();
     });
