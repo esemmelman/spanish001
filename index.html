@@ -164,6 +164,16 @@
     .conjugation-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr)); gap: 24px; margin: .8em 0 1.3em; }
     .conjugation-grid table { height: max-content; margin: 0; }
     .conjugation-grid th[colspan] { font-size: 1.15em; text-align: center; }
+    .reader-content, .reader-content h2, .reader-content h3, .reader-content p, .reader-content li, .reader-content blockquote, .reader-content table, .reader-content th, .reader-content td, .reader-content strong, .reader-content em {
+      color: #a73429;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: clamp(2.8rem, 6vw, 4rem);
+      font-style: normal;
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -.025em;
+    }
+    .reader-content th { background: #fffef9; }
 
     footer { display: flex; justify-content: space-between; gap: 20px; margin-top: 24px; color: var(--muted); font-size: 1rem; }
     kbd { padding: 2px 6px; border: 1px solid #cfc8ba; border-bottom-width: 2px; border-radius: 5px; background: #fffaf0; font-family: inherit; }
@@ -187,8 +197,7 @@
       footer { display: block; line-height: 1.7; }
       .reader-header { padding: 15px 18px; }
       .reader-close { min-width: 90px; padding: 10px 14px; }
-      .reader-content { padding: 26px 20px 44px; font-size: 1.7rem; line-height: 1.5; }
-      .reader-content table { font-size: 1em; }
+      .reader-content { padding: 26px 20px 44px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -281,7 +290,7 @@
     </dialog>
 
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.3.4</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.3.5</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
