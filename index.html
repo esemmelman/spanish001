@@ -60,6 +60,11 @@
     .range-option input:checked + label { border-color: var(--coral); color: white; background: var(--coral); box-shadow: 0 4px 12px rgba(233,99,79,.2); }
     .range-option input:focus-visible + label { outline: 3px solid rgba(242,188,85,.7); outline-offset: 2px; }
     .range-option input:disabled + label { border-style: dashed; color: #9c9c94; background: rgba(232,226,215,.48); cursor: not-allowed; opacity: .7; }
+    .sync-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: -8px 0 18px; color: var(--muted); font-size: .95rem; font-weight: 750; }
+    .sync-code { width: 245px; padding: 10px 13px; border: 1px solid var(--line); border-radius: 11px; color: var(--ink); background: var(--paper); font: inherit; font-size: 1rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .sync-button { padding: 10px 15px; border: 1px solid var(--line); border-radius: 11px; color: var(--ink); background: var(--paper); font: inherit; font-weight: 800; cursor: pointer; }
+    .sync-button:hover { border-color: var(--teal); background: #e6f2ef; }
+    .sync-status { min-width: 105px; color: var(--teal); }
 
     main { position: relative; overflow: hidden; min-height: 620px; border: 1px solid rgba(23,50,45,.12); border-radius: 38px; background: rgba(255,253,247,.9); box-shadow: var(--shadow); }
     main::after { content: ""; position: absolute; right: -75px; bottom: -95px; width: 230px; height: 230px; border: 28px solid rgba(233,99,79,.08); border-radius: 50%; pointer-events: none; }
@@ -128,6 +133,7 @@
       .shell { padding-top: 26px; }
       .control-bar { align-items: stretch; flex-direction: column; }
       .mode-switch { width: 100%; }
+      .sync-code { width: 100%; }
       main, .panel { min-height: 650px; }
       #flashcardPanel .topline { margin-bottom: 14px; }
       .card { width: 100%; height: 280px; }
@@ -161,6 +167,15 @@
       <fieldset class="range-picker" style="border:0;padding:0" aria-label="Choose a word group">
         <div class="range-options" id="rangeOptions"></div>
       </fieldset>
+    </div>
+
+    <div class="sync-bar" aria-label="Cross-device progress sync">
+      <label for="syncCode">Sync Code</label>
+      <input class="sync-code" id="syncCode" maxlength="24" autocomplete="off" spellcheck="false" aria-describedby="syncStatus">
+      <button class="sync-button" id="useSyncCode" type="button">Use Code</button>
+      <button class="sync-button" id="copySyncCode" type="button">Copy</button>
+      <button class="sync-button" id="newSyncCode" type="button">New Code</button>
+      <span class="sync-status" id="syncStatus" aria-live="polite">Connecting…</span>
     </div>
 
     <main>
@@ -202,7 +217,7 @@
     </main>
 
     <footer>
-      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.1.0</span>
+      <span><strong id="wordTotal">72</strong> unique words · accents preserved · v1.2.0</span>
       <span id="dataStatus">Loading Page 1 from Supabase…</span>
     </footer>
   </div>
@@ -263,7 +278,13 @@
     const SUPABASE_KEY = "sb_publishable_JOUqLZDnfGu_yCa6k6FVDQ_AYwpr72i";
     const VOCABULARY_TABLE = "spanish001_vocabulary_v1";
     const STORAGE_KEY = "spanish001-study-state-v1";
+    const SYNC_CODE_KEY = "spanish001-sync-code-v1";
+    const SYNC_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/spanish001-sync-v1`;
     let currentPage = 1;
+    let syncCode = "";
+    let cloudReady = false;
+    let cloudSaveTimer;
+    let applyingCloudState = false;
 
     function readStudyState() {
       try {
@@ -281,6 +302,101 @@
         unlockedGroup
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      if (cloudReady && !applyingCloudState) scheduleCloudSave(state);
+    }
+
+    function normalizeSyncCode(value) {
+      return String(value || "").toUpperCase().replace(/[^A-F0-9]/g, "").slice(0, 20);
+    }
+
+    function formatSyncCode(value) {
+      return normalizeSyncCode(value).match(/.{1,4}/g)?.join("-") || "";
+    }
+
+    function createSyncCode() {
+      const bytes = crypto.getRandomValues(new Uint8Array(10));
+      return Array.from(bytes, byte => byte.toString(16).padStart(2, "0")).join("").toUpperCase();
+    }
+
+    async function syncRequest(action, state) {
+      const response = await fetch(SYNC_FUNCTION_URL, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ action, syncCode, ...(state ? { state } : {}) })
+      });
+      if (!response.ok) throw new Error(`Sync returned ${response.status}`);
+      return response.json();
+    }
+
+    function scheduleCloudSave(state = readStudyState()) {
+      window.clearTimeout(cloudSaveTimer);
+      $("#syncStatus").textContent = "Saving…";
+      cloudSaveTimer = window.setTimeout(async () => {
+        try {
+          await syncRequest("save", state);
+          $("#syncStatus").textContent = "Synced";
+        } catch (error) {
+          $("#syncStatus").textContent = "Saved locally";
+          console.warn(error);
+        }
+      }, 350);
+    }
+
+    async function connectSyncCode(code, reloadInterface = true) {
+      const normalized = normalizeSyncCode(code);
+      if (normalized.length !== 20) {
+        $("#syncStatus").textContent = "Enter full code";
+        return;
+      }
+      syncCode = normalized;
+      localStorage.setItem(SYNC_CODE_KEY, syncCode);
+      $("#syncCode").value = formatSyncCode(syncCode);
+      $("#syncStatus").textContent = "Connecting…";
+      cloudReady = false;
+      try {
+        const remote = await syncRequest("load");
+        if (remote.found && remote.state) {
+          applyingCloudState = true;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(remote.state));
+          applyingCloudState = false;
+          cloudReady = true;
+          $("#syncStatus").textContent = "Synced";
+          if (reloadInterface) await loadPages();
+        } else {
+          cloudReady = true;
+          scheduleCloudSave();
+        }
+      } catch (error) {
+        cloudReady = true;
+        $("#syncStatus").textContent = "Using local state";
+        console.warn(error);
+      }
+    }
+
+    async function initializeSync() {
+      syncCode = normalizeSyncCode(localStorage.getItem(SYNC_CODE_KEY));
+      if (!syncCode) syncCode = createSyncCode();
+      await connectSyncCode(syncCode, false);
+    }
+
+    async function refreshCloudState() {
+      if (!cloudReady || !syncCode) return;
+      try {
+        const remote = await syncRequest("load");
+        if (remote.found && remote.state && JSON.stringify(remote.state) !== JSON.stringify(readStudyState())) {
+          applyingCloudState = true;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(remote.state));
+          await loadPages();
+          applyingCloudState = false;
+        }
+        $("#syncStatus").textContent = "Synced";
+      } catch (error) {
+        console.warn(error);
+      }
     }
 
     $("#wordTotal").textContent = words.length;
@@ -533,6 +649,17 @@
     flashcardButton.addEventListener("click", () => setMode("cards"));
     quizButton.addEventListener("click", () => setMode("quiz"));
     $("#pageSelect").addEventListener("change", event => loadPage(event.target.value));
+    $("#syncCode").addEventListener("input", event => { event.target.value = formatSyncCode(event.target.value); });
+    $("#useSyncCode").addEventListener("click", () => connectSyncCode($("#syncCode").value));
+    $("#copySyncCode").addEventListener("click", async () => {
+      await navigator.clipboard.writeText(formatSyncCode(syncCode));
+      $("#syncStatus").textContent = "Copied";
+    });
+    $("#newSyncCode").addEventListener("click", async () => {
+      await connectSyncCode(createSyncCode(), false);
+      scheduleCloudSave();
+    });
+    window.addEventListener("focus", refreshCloudState);
     card.addEventListener("click", () => card.classList.toggle("flipped"));
     card.addEventListener("keydown", event => {
       if (event.key === " " || event.key === "Enter") {
@@ -550,7 +677,7 @@
 
     buildRangeOptions();
     renderCard();
-    loadPages();
+    initializeSync().then(loadPages);
   </script>
 </body>
 </html>
