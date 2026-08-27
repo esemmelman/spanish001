@@ -147,7 +147,15 @@
     .page-reader[open] { display: flex; flex-direction: column; }
     .page-reader::backdrop { background: rgba(10,28,25,.72); }
     .reader-header { position: sticky; z-index: 2; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 28px; color: white; background: var(--teal); }
+    .reader-title-controls { display: flex; align-items: center; gap: 24px; }
     .reader-heading { margin: 0; font-size: clamp(2rem, 5vw, 3.4rem); }
+    .voice-control { display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 900; cursor: pointer; }
+    .voice-control input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .voice-switch { position: relative; width: 62px; height: 34px; border: 3px solid white; border-radius: 999px; background: rgba(255,255,255,.2); transition: .2s ease; }
+    .voice-switch::after { content: ""; position: absolute; top: 4px; left: 5px; width: 20px; height: 20px; border-radius: 50%; background: white; transition: transform .2s ease; }
+    .voice-control input:checked + .voice-switch { background: var(--gold); }
+    .voice-control input:checked + .voice-switch::after { transform: translateX(27px); }
+    .voice-control input:focus-visible + .voice-switch { outline: 3px solid var(--gold); outline-offset: 3px; }
     .reader-close { min-width: 120px; padding: 13px 20px; border: 3px solid white; border-radius: 14px; color: white; background: transparent; font: inherit; font-size: 1.35rem; font-weight: 900; cursor: pointer; }
     .reader-close:hover { color: var(--ink); background: white; }
     .reader-body { display: flex; flex: 1 1 auto; min-height: 0; }
@@ -213,6 +221,11 @@
       .choice { min-height: 70px; }
       footer { display: block; line-height: 1.7; }
       .reader-header { padding: 15px 18px; }
+      .reader-title-controls { gap: 14px; }
+      .voice-control { gap: 7px; font-size: 1rem; }
+      .voice-switch { width: 54px; height: 31px; }
+      .voice-switch::after { top: 3px; left: 4px; width: 19px; height: 19px; }
+      .voice-control input:checked + .voice-switch::after { transform: translateX(24px); }
       .reader-close { min-width: 90px; padding: 10px 14px; }
       .reader-content { padding: 26px 20px 44px; }
       .conjugation-grid tbody tr { display: block; }
@@ -303,7 +316,14 @@
 
     <dialog class="page-reader" id="pageReader" aria-labelledby="readerHeading">
       <header class="reader-header">
-        <h1 class="reader-heading" id="readerHeading">Page 1</h1>
+        <div class="reader-title-controls">
+          <h1 class="reader-heading" id="readerHeading">Page 1</h1>
+          <label class="voice-control" for="voiceToggle">
+            <span>Voice</span>
+            <input id="voiceToggle" type="checkbox" role="switch" aria-label="Speak Spanish words on hover">
+            <span class="voice-switch" aria-hidden="true"></span>
+          </label>
+        </div>
         <button class="reader-close" id="readerClose" type="button">Close</button>
       </header>
       <div class="reader-body">
@@ -817,6 +837,15 @@
       $("#translationBubble").classList.remove("show");
     }
 
+    function speakSpanishWord(word) {
+      if (!$("#voiceToggle").checked || !("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(word.textContent.trim());
+      utterance.lang = "es-ES";
+      utterance.rate = .85;
+      window.speechSynthesis.speak(utterance);
+    }
+
     function updateReaderScrollbar() {
       const region = $("#readerScrollRegion");
       const track = $("#readerScrollbar");
@@ -983,7 +1012,10 @@
     $("#readerClose").addEventListener("click", () => $("#pageReader").close());
     $("#readerContent").addEventListener("mouseover", event => {
       const word = event.target.closest(".translated-word");
-      if (word) showTranslationBubble(word);
+      if (word && !word.contains(event.relatedTarget)) {
+        showTranslationBubble(word);
+        speakSpanishWord(word);
+      }
     });
     $("#readerContent").addEventListener("mouseout", event => {
       const word = event.target.closest(".translated-word");
@@ -995,6 +1027,9 @@
       showTranslationBubble(word);
       window.clearTimeout(translationBubbleTimer);
       translationBubbleTimer = window.setTimeout(hideTranslationBubble, 3000);
+    });
+    $("#voiceToggle").addEventListener("change", event => {
+      if (!event.target.checked && "speechSynthesis" in window) window.speechSynthesis.cancel();
     });
     $("#readerScrollRegion").addEventListener("scroll", () => {
       updateReaderScrollbar();
@@ -1032,6 +1067,7 @@
     $("#pageReader").addEventListener("close", () => {
       $("#pageReaderButton").classList.remove("active");
       hideTranslationBubble();
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
     });
     $("#pageReader").addEventListener("click", event => {
       if (event.target === event.currentTarget) event.currentTarget.close();
